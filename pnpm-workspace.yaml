@@ -1,0 +1,3 @@
+# Hooks install with `pnpm exec lefthook install`, so the postinstall stays off
+allowBuilds:
+  lefthook: false

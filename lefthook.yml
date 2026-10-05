@@ -1,0 +1,6 @@
+pre-commit:
+  jobs:
+    - name: format
+      glob: '*.md'
+      run: pnpm exec prettier --write {staged_files}
+      stage_fixed: true

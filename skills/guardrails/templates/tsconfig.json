@@ -1,0 +1,30 @@
+{
+	// A framework preset (`astro/tsconfigs/strictest`) goes in `extends`; the flags below still apply
+	"compilerOptions": {
+		"target": "es2023",
+		// Add "dom" and "dom.iterable" where browser code lives
+		"lib": ["es2023"],
+		// `preserve` with `"moduleResolution": "bundler"` for a bundled app
+		"module": "nodenext",
+		"moduleDetection": "force",
+		"allowImportingTsExtensions": true,
+		"noEmit": true,
+		"verbatimModuleSyntax": true,
+		// Node strips types without transpiling, so enums, namespaces, and parameter properties are out
+		"erasableSyntaxOnly": true,
+		"isolatedModules": true,
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
+		// Unused bindings are left to ESLint, which honours the `_` prefix everywhere
+		"strict": true,
+		"noUncheckedIndexedAccess": true,
+		"exactOptionalPropertyTypes": true,
+		"noImplicitOverride": true,
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true,
+		"allowUnreachableCode": false,
+		"allowUnusedLabels": false,
+		"types": ["node"]
+	},
+	"exclude": ["dist", "temp", ".claude/worktrees"]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "agent-skills",
+  "private": true,
+  "description": "Claude Code skills: browser-verify, critique, guardrails, lean-audit, wikipedia-research",
+  "license": "MIT",
+  "scripts": {
+    "check": "prettier --check \"**/*.md\"",
+    "fix": "prettier --write \"**/*.md\""
+  },
+  "devDependencies": {
+    "lefthook": "^2.1.16",
+    "prettier": "^3.9.9"
+  },
+  "packageManager": "pnpm@12.4.1"
+}
