@@ -25,7 +25,7 @@ When two tools cover one concern, turn the second one's rules off with a note na
 1. **Survey.** Read `package.json`, the lockfile, and any config these tools already have. Pin to the installed majors, and check each template against its tool's docs for that version.
 2. **Install** as devDependencies: `typescript@^6 @types/node eslint @eslint/js typescript-eslint eslint-plugin-unicorn eslint-plugin-perfectionist @eslint-community/eslint-plugin-eslint-comments globals prettier knip fallow lefthook vitest`. Keep TypeScript on 6 until typescript-eslint supports 7, because it refuses to load under 7.
 3. **Copy the templates**, then fit their globs to the repo's layout.
-4. **Wire the gate.** Add the scripts `"check": "lefthook run check"` and `"fix": "lefthook run fix"`, then run `pnpm exec lefthook install`. pnpm blocks lefthook's postinstall, so the hooks don't install themselves.
+4. **Wire the gate.** Add the scripts `"check": "lefthook run check"` and `"fix": "lefthook run fix"`, then run `pnpm exec lefthook install`. pnpm blocks lefthook's postinstall unless `allowBuilds` in `pnpm-workspace.yaml` lists `lefthook: true`, so without that entry the hooks don't install themselves.
 5. **Go green.** Run `pnpm fix`, then `pnpm check`. You're done when `check` exits clean without a single new suppression.
 6. **Tell the agents.** Add the gate lines below to `AGENTS.md`.
 
@@ -58,7 +58,7 @@ Every escape hatch states its reason, using the syntax its tool provides:
 - Knip: `/** @public */` on a deliberate export
 - Fallow: `// fallow-ignore-next-line <issue> -- <reason>`, or `thresholdOverrides[].reason` in the config
 
-The ESLint template fails any suppression that no longer suppresses anything. When a whole directory shares the reason, use a scoped config block with a note instead of repeating the inline comment.
+The ESLint and Fallow templates fail any suppression that no longer suppresses anything, and the Fallow template also fails one with no reason. When a whole directory shares the reason, use a scoped config block with a note instead of repeating the inline comment.
 
 ## Existing repos
 
