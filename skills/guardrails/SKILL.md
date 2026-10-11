@@ -69,6 +69,13 @@ A retrofit gets the gate green first and strict second.
 3. Autofix one rule at a time. Unicorn's fixers change behaviour at the edges (array-likes, sparse arrays, `this`), so review each batch as a diff.
 4. Treat Knip's dead-code findings in an old tree as claims. Trace each one (`knip --trace-file <file> --trace-export <name>`) before deleting.
 
+## Fallow in practice
+
+- **`fallow fix` stays out of `fix`.** It strips `export` from unused exports and edits `package.json`, so it unexports work an agent has not wired up yet.
+- **A cognitive ceiling is a per-unit regression detector.** Give each unit its own `thresholdOverrides` entry at its measured score plus 2: an exact ceiling fires on any incidental edit and trains a reflex bump, and one shared ceiling hides growth. Read actuals from `threshold_overrides[].metrics` in `health --complexity --format json`.
+- **Prove an opt-in detector with a planted violation.** The JSON omits a detector's key when it finds nothing, so a zero is indistinguishable from a detector that never ran.
+- **Astro markup scores as one `<template>` unit**, so every `class:list` ternary adds to it. The fix is a subcomponent; hoisting class lists into frontmatter only moves the score.
+
 ## Growing the guardrails
 
 When an agent repeats a mistake a machine can detect, the fix is a check. Scope a `no-restricted-syntax` or `no-restricted-imports` block to the files where the mistake happens, and write its `message` as the instruction the agent follows next. ESLint replaces a rule's options wholesale, so a scoped block has to spread the base list back in.
