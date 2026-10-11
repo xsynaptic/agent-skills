@@ -23,7 +23,7 @@ Every CLI call carries `--sessionId "$CLAUDE_CODE_SESSION_ID"`. `start` opens th
 ## Target URL
 
 1. The URL the request names
-2. Otherwise a dev server already running for this checkout; Astro records its `url` in `.astro/dev.json` at the worktree root (`git rev-parse --show-toplevel`) while it runs
+2. Otherwise a dev server already running for this checkout; Astro records its `url` in `.astro/dev.json` at the worktree root (`git rev-parse --show-toplevel`) while it runs. A crashed server leaves the file behind and another project can take the port, so check the page `<title>` is this project's
 3. Otherwise start the project's dev script as a background job, take the URL it prints, and stop it once the check is done
 4. Ask when none of these yields a URL
 
@@ -46,6 +46,11 @@ chrome-devtools list_console_messages 2 --types error --sessionId "$S"
 - Snapshot again after every action, since uids from an older snapshot go stale
 - `take_screenshot` carries `--filePath "$SHOT"` every time, an absolute path in your scratchpad directory (`$TMPDIR` when there is none); the default leaves a multi-MB PNG in a temp dir nothing cleans up. Open it with Read
 - `evaluate_script "<function>" --pageId 2` reads values the snapshot lacks
+
+## Reading styles
+
+- `getComputedStyle` returns an interpolated value mid-transition, so sample it once the transition has run its duration
+- Check a `:hover` rule with `hover 2 <uid>` then `get_css_styles 2 <uid>`, which lists the rules that matched; the computed value right after `hover` is still mid-transition
 
 ## Finish
 
