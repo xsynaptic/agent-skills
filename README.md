@@ -6,6 +6,7 @@ Skills for [Claude Code](https://claude.com/claude-code). Each is a folder under
 - [`critique`](skills/critique/SKILL.md) sends the pending changes to two isolated subagents, one hunting bugs and one questioning the design, then weighs what they find. Ask for a critique or a second opinion before committing. Requires a git repository.
 - [`guardrails`](skills/guardrails/SKILL.md) sets up type, lint, format, dead-code, and complexity checks plus git hooks in a TypeScript repo, run as a single `check` and `fix` gate. Fires when scaffolding a repo or tightening its checks. Requires Node and pnpm.
 - [`lean-audit`](skills/lean-audit/SKILL.md) models one rule that is implemented twice (a policy predicate and its SQL filter, client and server validation) in Lean 4, then proves or refutes that the halves agree. Ask for a Lean audit or a formal proof. Requires the Lean 4 toolchain via [elan](https://github.com/leanprover/elan).
+- [`umami`](skills/umami/SKILL.md) covers self-hosted Umami: verifying upgrades and migrations, embedding the tracker on sites with client-side routing, gating ingest at the reverse proxy, and querying the data over MCP to find bots. Fires when Umami comes up. Assumes Docker Compose; agent access needs Umami 3.4.0 or later.
 - [`wikipedia-research`](skills/wikipedia-research/SKILL.md) reads Wikipedia through its APIs, summary and section list first, in any language edition. Fires on a Wikipedia URL or a request to look something up there. Requires `curl` and `python3`.
 
 ## Install
