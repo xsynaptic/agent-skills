@@ -15,7 +15,7 @@
 		"isolatedModules": true,
 		"resolveJsonModule": true,
 		"skipLibCheck": true,
-		// Unused bindings are left to ESLint, which honours the `_` prefix everywhere
+		// Unused bindings are left to ESLint
 		"strict": true,
 		"noUncheckedIndexedAccess": true,
 		"exactOptionalPropertyTypes": true,

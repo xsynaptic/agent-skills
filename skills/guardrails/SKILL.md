@@ -23,7 +23,7 @@ When two tools cover one concern, turn the second one's rules off with a note na
 [`templates/`](templates/) holds the house configuration. The notes in it are reasons, so keep them in the copy. Commands assume pnpm.
 
 1. **Survey.** Read `package.json`, the lockfile, and any config these tools already have. Pin to the installed majors, and check each template against its tool's docs for that version.
-2. **Install** as devDependencies: `typescript@^6 @types/node eslint @eslint/js typescript-eslint eslint-plugin-unicorn eslint-plugin-perfectionist @eslint-community/eslint-plugin-eslint-comments globals prettier knip fallow lefthook vitest`. Keep TypeScript on 6 until typescript-eslint supports 7, because it refuses to load under 7.
+2. **Install** as devDependencies: `typescript@^6 @types/node eslint @eslint/js typescript-eslint eslint-plugin-unicorn eslint-plugin-perfectionist @eslint-community/eslint-plugin-eslint-comments globals jiti prettier knip fallow lefthook vitest`. Keep TypeScript on 6 until typescript-eslint supports 7, because it refuses to load under 7. ESLint needs `jiti` to load a `.ts` config.
 3. **Copy the templates**, then fit their globs to the repo's layout.
 4. **Wire the gate.** Add the scripts `"check": "lefthook run check"` and `"fix": "lefthook run fix"`, then run `pnpm exec lefthook install`. pnpm blocks lefthook's postinstall unless `allowBuilds` in `pnpm-workspace.yaml` lists `lefthook: true`, so without that entry the hooks don't install themselves.
 5. **Go green.** Run `pnpm fix`, then `pnpm check`. You're done when `check` exits clean without a single new suppression.
@@ -66,7 +66,7 @@ A retrofit gets the gate green first and strict second.
 
 1. Turn on one tool at a time, and get each green before the next: tsconfig flags, then ESLint, then Knip, then Fallow.
 2. Set each **ceiling** at the worst case the code already has, with a note saying so. Then **ratchet** it down as the code under it gets refactored. A ceiling only ever moves down.
-3. Autofix one rule at a time. Unicorn's fixers change behaviour at the edges (array-likes, sparse arrays, `this`), so review each batch as a diff.
+3. Autofix one rule at a time. Unicorn's fixers change behaviour at the edges (array-likes, sparse arrays, `this`), and its renames are mechanical (`args` becomes `arguments_`, `needsAdmin` becomes `isNeedsAdmin`), so review each batch as a diff.
 4. Treat Knip's dead-code findings in an old tree as claims. Trace each one (`knip --trace-file <file> --trace-export <name>`) before deleting.
 
 ## Fallow in practice
@@ -78,7 +78,7 @@ A retrofit gets the gate green first and strict second.
 
 ## Growing the guardrails
 
-When an agent repeats a mistake a machine can detect, the fix is a check. Scope a `no-restricted-syntax` or `no-restricted-imports` block to the files where the mistake happens, and write its `message` as the instruction the agent follows next. ESLint replaces a rule's options wholesale, so a scoped block has to spread the base list back in.
+When an agent repeats a mistake a machine can detect, first look for a structural fix that makes it unwritable: one owner for the state, internals a wrong import cannot reach, a type that rejects the bad value. A check is the fallback. Scope a `no-restricted-syntax` or `no-restricted-imports` block to the files where the mistake happens, and write its `message` as the instruction the agent follows next. ESLint replaces a rule's options wholesale, so a scoped block has to spread the base list back in. Prove the check by planting the past mistake and watching it fail, because a selector that matches nothing passes silently.
 
 A mistake of understanding gets prose instead, placed where the agent will read it. A check that has caught nothing in a long while is a candidate for deletion.
 
