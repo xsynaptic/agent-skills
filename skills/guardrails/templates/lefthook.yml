@@ -35,7 +35,10 @@ check:
           - name: complexity
             run: out=$(fallow health --complexity --quiet 2>&1) || { printf '%s\n' "$out"; exit 1; }
           - name: architecture
-            run: fallow dead-code --boundary-violations --circular-deps --stale-suppressions --quiet
+            run: fallow architecture --quiet
+          # `fallow architecture` skips stale and reasonless suppressions; only dead-code reports them
+          - name: suppressions
+            run: fallow dead-code --stale-suppressions --quiet
           - name: test
             run: vitest run --passWithNoTests
 

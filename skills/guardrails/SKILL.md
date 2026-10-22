@@ -25,7 +25,7 @@ When two tools cover one concern, turn the second one's rules off with a note na
 1. **Survey.** Read `package.json`, the lockfile, and any config these tools already have. Pin to the installed majors, and check each template against its tool's docs for that version.
 2. **Install** as devDependencies: `typescript@^6 @types/node eslint @eslint/js typescript-eslint eslint-plugin-unicorn eslint-plugin-perfectionist @eslint-community/eslint-plugin-eslint-comments globals jiti prettier knip fallow lefthook vitest`. Keep TypeScript on 6 until typescript-eslint supports 7, because it refuses to load under 7. ESLint needs `jiti` to load a `.ts` config.
 3. **Copy the templates**, then fit their globs to the repo's layout.
-4. **Wire the gate.** Add the scripts `"check": "lefthook run check"` and `"fix": "lefthook run fix"`, then run `pnpm exec lefthook install`. pnpm blocks lefthook's postinstall unless `allowBuilds` in `pnpm-workspace.yaml` lists `lefthook: true`, so without that entry the hooks don't install themselves.
+4. **Wire the gate.** Add the scripts `"check": "lefthook run check"` and `"fix": "lefthook run fix"`, then run `pnpm exec lefthook install`. pnpm blocks lefthook's postinstall unless `allowBuilds` in `pnpm-workspace.yaml` lists `lefthook: true`, so without that entry the hooks don't install themselves. On pnpm 12.11+, deny fallow's bundled agent skills in the same file with `permissions: { fallow: { skills: false } }`: they duplicate this setup and hand dead code to fallow, and the denial stops pnpm offering them. Older pnpm rejects or warns on the key, so leave it out until the pin moves.
 5. **Go green.** Run `pnpm fix`, then `pnpm check`. You're done when `check` exits clean without a single new suppression.
 6. **Tell the agents.** Add the gate lines below to `AGENTS.md`.
 
@@ -73,7 +73,7 @@ A retrofit gets the gate green first and strict second.
 
 - **`fallow fix` stays out of `fix`.** It strips `export` from unused exports and edits `package.json`, so it unexports work an agent has not wired up yet.
 - **A cognitive ceiling is a per-unit regression detector.** Give each unit its own `thresholdOverrides` entry at its measured score plus 2: an exact ceiling fires on any incidental edit and trains a reflex bump, and one shared ceiling hides growth. Read actuals from `threshold_overrides[].metrics` in `health --complexity --format json`.
-- **Prove an opt-in detector with a planted violation.** The JSON omits a detector's key when it finds nothing, so a zero is indistinguishable from a detector that never ran.
+- **Prove an opt-in detector with a planted violation.** A detector that never ran reports the same empty list as one that found nothing.
 - **Astro markup scores as one `<template>` unit**, so every `class:list` ternary adds to it. The fix is a subcomponent; hoisting class lists into frontmatter only moves the score.
 
 ## Growing the guardrails

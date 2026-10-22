@@ -20,7 +20,10 @@
 		"dev-dependencies-in-production": "off",
 		"unused-dependency-overrides": "off",
 		"misconfigured-dependency-overrides": "off",
-		// Reported only by `dead-code --stale-suppressions`, which the architecture job passes
+		// Cycles belong to fallow, and these two default to warn, which never fails the gate
+		"re-export-cycle": "error",
+		"package-cycle": "error",
+		// Reported only by `dead-code --stale-suppressions`, which the suppressions job runs
 		"stale-suppressions": "error",
 		"require-suppression-reason": "error",
 	},
