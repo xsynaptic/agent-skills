@@ -1,11 +1,12 @@
 {
   "name": "agent-skills",
   "private": true,
+  "type": "module",
   "description": "Claude Code skills: browser-verify, critique, guardrails, lean-audit, wikipedia-research",
   "license": "MIT",
   "scripts": {
-    "check": "prettier --check \"**/*.md\"",
-    "fix": "prettier --write \"**/*.md\""
+    "check": "prettier --check .",
+    "fix": "prettier --write ."
   },
   "devDependencies": {
     "lefthook": "^2.1.16",
