@@ -12,5 +12,5 @@
     "lefthook": "^2.1.16",
     "prettier": "^3.9.9"
   },
-  "packageManager": "pnpm@12.4.1"
+  "packageManager": "pnpm@12.14.0"
 }
