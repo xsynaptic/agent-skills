@@ -2,12 +2,17 @@
 
 Skills for [Claude Code](https://claude.com/claude-code). Each is a folder under `skills/` that installs on its own.
 
-- [`browser-verify`](skills/browser-verify/SKILL.md) checks front-end work in an isolated Chrome: rendering, interactions, screenshots, console errors, and on request a visible browser, Lighthouse audit, performance trace, or heap snapshot. Requires Chrome and the `chrome-devtools` CLI (`npm i -g chrome-devtools-mcp`).
-- [`critique`](skills/critique/SKILL.md) sends the pending changes to two isolated subagents, one hunting bugs and one questioning the design, then weighs what they find. Ask for a critique or a second opinion before committing. Requires a git repository.
-- [`guardrails`](skills/guardrails/SKILL.md) sets up type, lint, format, dead-code, and complexity checks plus git hooks in a TypeScript repo, run as a single `check` and `fix` gate. Fires when scaffolding a repo or tightening its checks. Requires Node and pnpm.
-- [`lean-audit`](skills/lean-audit/SKILL.md) models one rule that is implemented twice (a policy predicate and its SQL filter, client and server validation) in Lean 4, then proves or refutes that the halves agree. Ask for a Lean audit or a formal proof. Requires the Lean 4 toolchain via [elan](https://github.com/leanprover/elan).
-- [`umami`](skills/umami/SKILL.md) covers self-hosted Umami: verifying upgrades and migrations, embedding the tracker on sites with client-side routing, gating ingest at the reverse proxy, and querying the data over MCP to find bots. Fires when Umami comes up. Assumes Docker Compose; agent access needs Umami 3.4.0 or later.
-- [`wikipedia-research`](skills/wikipedia-research/SKILL.md) reads Wikipedia through its APIs, summary and section list first, in any language edition. Fires on a Wikipedia URL or a request to look something up there. Requires `curl` and `python3`.
+## Checking work
+
+- [`browser-verify`](skills/browser-verify/SKILL.md) checks front-end work in its own Chrome: whether the page renders, how an interaction behaves, screenshots and console errors. On request it opens a visible browser or runs a Lighthouse audit, a performance trace or a heap snapshot. Each session gets its own browser, so parallel sessions don't collide. Needs Chrome and the `chrome-devtools` CLI (`npm i -g chrome-devtools-mcp`).
+- [`critique`](skills/critique/SKILL.md) is a lightweight second opinion on your pending changes. Two reviewers who never saw the session read the diff, one hunting bugs and one questioning the design, and the agent weighs what they find in a single pass. Larger review setups spawn many more agents and take much longer; this one aims for most of the value at a fraction of the cost. Needs a git repository.
+- [`formal-verification`](skills/formal-verification/SKILL.md) checks one rule in the code with the cheapest tool that could show it breaking: a property test on the real code, a TLA+ model when steps can interleave, or a Lean proof when every input matters. Rules worth keeping stay in the repo, paired with a test on the real code that fails if the two drift apart. Needs Docker for TLA+ and Lean.
+- [`guardrails`](skills/guardrails/SKILL.md) sets up type, lint, format, dead-code and complexity checks in a TypeScript repo, with git hooks and a single `check` command that runs them all. An agent obeys a failing check more reliably than a style guide. Needs Node and pnpm.
+
+## Working with a service
+
+- [`umami`](skills/umami/SKILL.md) covers running Umami yourself: upgrades and migrations that fail quietly, adding the tracker to sites with client-side routing, putting it behind a reverse proxy, and querying the data over MCP to find bots. Assumes Docker Compose; agent access needs Umami 3.4.0 or later.
+- [`wikipedia-research`](skills/wikipedia-research/SKILL.md) reads Wikipedia through its own APIs in any language edition, starting from the summary and section list. The agent gets the article's actual text instead of a fetch tool's summary of it. Needs `curl` and `python3`.
 
 ## Install
 
@@ -28,7 +33,7 @@ ln -s "$PWD/agent-skills/skills/critique" ~/.claude/skills/critique
 
 ## Development
 
-`pnpm install`, then `pnpm exec lefthook install` to format Markdown with Prettier on commit. `pnpm check` and `pnpm fix` run it by hand.
+`pnpm install` sets up git hooks that lint and format staged files on commit. `pnpm check` runs every check (format, types, lint), and `pnpm fix` fixes what it can.
 
 ## Licence
 
