@@ -1,9 +1,9 @@
 ---
-name: browser-verify
-description: Verify front-end work in a real Chrome browser. Use when checking that a page renders, testing an interaction, capturing a screenshot, or reading console errors on a dev server; also when a visible browser, a Lighthouse audit, a performance trace, or a heap snapshot is needed.
+name: chrome-devtools
+description: Drive a real Chrome when a task needs the page as a browser renders it. Use to verify front-end work (rendering, interactions, screenshots, console errors), to read a site that WebFetch returns empty or broken, or when a visible browser, a Lighthouse audit, a performance trace, or a heap snapshot is needed.
 ---
 
-# Browser verify
+# Chrome DevTools
 
 Parallel sessions each drive their own Chrome through the `chrome-devtools` CLI, keyed on this session's ID.
 
@@ -22,10 +22,11 @@ Every CLI call carries `--sessionId "$CLAUDE_CODE_SESSION_ID"`. `start` opens th
 
 ## Target URL
 
-1. The URL the request names
-2. Otherwise a dev server already running for this checkout; Astro records its `url` in `.astro/dev.json` at the worktree root (`git rev-parse --show-toplevel`) while it runs. A crashed server leaves the file behind and another project can take the port, so check the page `<title>` is this project's
-3. Otherwise start the project's dev script as a background job, take the URL it prints, and stop it once the check is done
-4. Ask when none of these yields a URL
+Use the URL the request names. To verify this checkout's own front-end when none is named:
+
+1. A dev server already running for this checkout; Astro records its `url` in `.astro/dev.json` at the worktree root (`git rev-parse --show-toplevel`) while it runs. A crashed server leaves the file behind and another project can take the port, so check the page `<title>` is this project's
+2. Otherwise start the project's dev script as a background job, take the URL it prints, and stop it once the check is done
+3. Ask when neither yields a URL
 
 ## The loop
 
@@ -47,6 +48,11 @@ chrome-devtools list_console_messages 2 --types error --sessionId "$S"
 - `take_screenshot` carries `--filePath "$SHOT"` every time, an absolute path in your scratchpad directory (`$TMPDIR` when there is none); the default leaves a multi-MB PNG in a temp dir nothing cleans up. Open it with Read
 - `evaluate_script "<function>" --pageId 2` reads values the snapshot lacks
 
+## Reading a page
+
+- `evaluate_script "() => document.body.innerText" --pageId 2` returns the rendered text in one call, without the uids and roles a snapshot carries; narrow it to `main` or `article` when navigation crowds the content, and add `--filePath` for a long page
+- A page that renders from an API often holds its data whole in the response: `list_network_requests 2 --resourceTypes fetch xhr`, then `get_network_request 2 --reqid <id>`
+
 ## Reading styles
 
 - `getComputedStyle` returns an interpolated value mid-transition, so sample it once the transition has run its duration
@@ -58,7 +64,7 @@ chrome-devtools list_console_messages 2 --types error --sessionId "$S"
 chrome-devtools stop --sessionId "$CLAUDE_CODE_SESSION_ID"
 ```
 
-`stop` closes Chrome and deletes its temporary profile. The check is done when `stop` has run and the report names the URL, what was checked, the console errors found (or none), and any screenshot path.
+`stop` closes Chrome and deletes its temporary profile. Every task ends with `stop`. A verification report names the URL, what was checked, the console errors found (or none), and any screenshot path.
 
 ## Visible browser and deep diagnostics
 
