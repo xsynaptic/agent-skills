@@ -9,6 +9,10 @@ Read Wikipedia with `curl` against its REST and MediaWiki APIs. WebFetch hands b
 
 `{lang}` is the language edition's subdomain, `en` unless the URL or the user says otherwise. `{title}` is URL-encoded. A URL of the form `https://{lang}.wikipedia.org/wiki/{title}` supplies both.
 
+## Rate limits
+
+Wikimedia throttles anonymous API clients, and a run of article fetches trips it within a dozen requests. Pass a descriptive client name with `-A "<project>-research/1.0"` on every `curl` (a generic name, never a personal email), space requests at least five seconds apart, and fetch one article at a time. A throttled call returns HTTP 429 or a non-JSON body that breaks the parser: wait 15 seconds, then double the wait on each retry, up to three attempts, before reporting the title as unfetched.
+
 ## Workflow
 
 ### 1. Summary and section list
