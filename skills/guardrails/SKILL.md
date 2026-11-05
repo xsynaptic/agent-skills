@@ -87,4 +87,4 @@ A mistake of understanding gets prose instead, placed where the agent will read 
 Audits run on demand, never in the gate.
 
 - **Stryker** finds tests that run code without asserting anything about it. It isn't part of setup; add it once there's a suite worth auditing. Read the `Survived` mutants and ignore the score, because a test written only to move the score is a tautology.
-- **Lean**: when one rule is implemented twice (a predicate and its SQL filter, client and server validation), the `lean-audit` skill, published alongside this one, proves or refutes that the two halves agree.
+- **Formal verification**: when a rule must hold past what example tests reach (async steps interleaving, every input to a parser), the `formal-verification` skill, published alongside this one, checks it with a property test, TLA+ or Lean.
