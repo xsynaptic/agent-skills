@@ -2,15 +2,27 @@
   "name": "agent-skills",
   "private": true,
   "type": "module",
-  "description": "Claude Code skills: browser-verify, critique, guardrails, lean-audit, wikipedia-research",
+  "description": "Skills for Claude Code",
   "license": "MIT",
   "scripts": {
-    "check": "prettier --check .",
-    "fix": "prettier --write ."
+    "check": "lefthook run check",
+    "fix": "eslint --fix --cache --cache-location node_modules/.cache/eslint/ .; prettier --write --log-level warn ."
   },
   "devDependencies": {
-    "lefthook": "^2.1.16",
-    "prettier": "^3.9.9"
+    "@eslint-community/eslint-plugin-eslint-comments": "^4.8.1",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.19.2",
+    "eslint": "^10.13.0",
+    "eslint-plugin-perfectionist": "^5.13.0",
+    "eslint-plugin-unicorn": "^78.0.0",
+    "jiti": "^2.7.0",
+    "lefthook": "^2.2.2",
+    "prettier": "^3.9.10",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.0"
+  },
+  "engines": {
+    "node": ">=24.0.0"
   },
   "packageManager": "pnpm@12.14.0"
 }
