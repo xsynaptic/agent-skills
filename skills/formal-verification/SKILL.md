@@ -21,7 +21,7 @@ When a property test and Lean both fit, write the property test first, and move 
 
 Before starting, tell the operator the claim, the tool and the reason, one sentence each, then carry on. The operator can judge the claim without knowing the code, and a wrong claim caught here saves the most work.
 
-TLA+ and Lean check a hand-written model of the code, so read [models.md](models.md) before the tool file. Read it too when a check under `verify/` fails, when you need to confirm that the models still match the code, or before editing a file that a model names.
+Read [models.md](models.md) before the TLA+ or Lean file, and on its own when a check under `verify/` fails or may have drifted, or before editing a file that a model names.
 
 ## See it fail
 
@@ -29,4 +29,4 @@ A check never seen red proves nothing. Break each claim the way a real bug would
 
 ## Hand off
 
-Every result gets a home: each bug a regression test built from its counterexample (and a fix, if asked), and a hand-off saying what holds, under which bounds and assumptions, what broke, and what the check leaves out. The bounds are what the run covered: the constants and state count for TLC, the generator domains and run count for a property test. Keep each bound where the claim needs it; if you must reduce a bound, say so in the hand-off.
+Every result gets a home: each bug a regression test built from its counterexample (and a fix, if asked), and a hand-off saying what holds, under which bounds and assumptions, what broke, and what the check leaves out. The bounds are what the run covered: the constants and state count for TLC, the generator domains and run count for a property test. Keep each bound where the claim needs it; if you must reduce a bound, say so in the hand-off. Name what enforces each assumption, a model's or a generator's: the type system, the runtime, a library contract, the build, or convention alone. Report each one that only convention enforces; that is where the bugs are.

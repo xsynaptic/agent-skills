@@ -40,6 +40,6 @@ Lake's TOML globs reject the quoted names kebab-case modules need, so `srcDir` s
 - Without Mathlib: `Nat.le_of_not_lt` for `by_contra`, `conv => lhs` for `conv_lhs`, and no `tauto` or `aesop`.
 - A custom `simp` lemma stated too generally loops against core lemmas; narrow it to the concrete type.
 - `omega` can miss a hypothesis reached through a type abbreviation; restate the lemma over bare `Nat` or `Int`.
-- Lemma names drift between releases and `--wfail` makes a deprecation fatal. The image has no shell, so search the toolchain from outside: `docker run --rm -v lean-toolchains:/toolchains:ro debian:bookworm-slim grep -rn '<name>' /toolchains`.
+- Lemma names drift between releases and `--wfail` makes a deprecation fatal. The image has no shell, so search the toolchain from outside: `docker run --rm -v lean-toolchains:/toolchains:ro debian:trixie-slim grep -rn '<name>' /toolchains`.
 - `trace_state` before a failing tactic prints the goal its error truncates.
 - `matches` is a keyword, and a structure named like its namespace (`World.World`) breaks field notation.

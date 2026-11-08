@@ -8,7 +8,7 @@ TLA+ and Lean check a hand-written **model** of the code, never the code itself,
 - State the claim as two independent descriptions that must agree, such as output against input, or a rule over every reachable state. A claim that unfolding the definitions proves is a tautology; restate it as the reader would.
 - Make explicit each decision the code leaves implicit, since two implementations of one rule drift there: absent versus explicit false, `NULL` in a `WHERE` (dropped) versus in a selected column (a value), how the query builder renders an empty `IN` list, timestamp precision lost across a runtime boundary, and whether a purge rebuilds a cache key from the row after a write when the key was built from the row before it.
 - The real engine (the database, the compiled query, the runtime) outranks the model on what it decides: parenthesization, casts, collation, date parsing, clock precision.
-- Name what enforces each assumption in the model: the type system, the runtime, a library contract, the build, or convention alone. Report each one that only convention enforces; that is where the bugs are. Show with one example that the assumptions can all hold at once, since contradictory assumptions prove anything.
+- Show with one example that the model's assumptions can all hold at once, since contradictory assumptions prove anything.
 - A model's prose is its **source map** and the decisions it makes explicit. Its `spec` file names the code it covers, and a definition named differently from its code symbol names that symbol. `grep -rl <path>` over every `verify/` folder then finds every model of a file. The `spec` file also records the **sync commit**, the last commit the model was confirmed against.
 
 ## When a check goes red or drifts
@@ -19,7 +19,7 @@ Take the verdict from the tool's exit code (`lake build --wfail`, TLC), and fix 
 
 1. **Stale model**: the code moved. Update the model from the code, never toward whatever makes it pass, then see it fail again, since an updated model can lose the ability to fail. Change the claim only when the promise changed on purpose, and cite the evidence (a doc comment, a test, the commit message) in the hand-off.
 2. **Modelling error**: replay the counterexample against the real code, one step per action. A step the code cannot take is the model's fault.
-3. **Bug**: the code takes every step. **Findings stay findings**: report the counterexample in the code's words with the claim unchanged, and change product code only when the operator asks. Once fixed, the bug gets a regression test and leaves the model.
+3. **Bug**: the code takes every step. **Findings stay findings**: report the counterexample in the code's words with the claim unchanged.
 
 ## Where the work lives
 
