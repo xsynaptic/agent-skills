@@ -35,12 +35,15 @@ const composeArguments = [
 ];
 
 const tlcExitCode = {
+  deadlock: 11,
   holds: 0,
   invariantBroken: 12,
   propertyBroken: 13,
 } as const;
 
 const coverageRowPattern = /^<(\w+) line [^>]*>: \d+:(\d+)$/gm;
+const deadExpressionPattern =
+  /^\s+\|*line (\d+), col (\d+) to line \d+, col \d+ of module (\w+): 0$/gm;
 const coverageHeader = "The coverage statistics at";
 // Progress lines repeat this phrase with thousands separators; only the final summary starts a line
 const finalCountPattern = /^\d+ states generated, (\d+) distinct states found/m;
@@ -67,6 +70,7 @@ function runTlc(
       "1",
       "-fp",
       "0",
+      // The models mount is read-only and TLC 1.7.4 has no `-noGenerateSpecTE`, so its files stay in the container
       "-metadir",
       "/tmp/tlc",
       ...flags,
@@ -80,27 +84,31 @@ function runTlc(
   if (result.error) throw result.error;
 
   const output = `${result.stdout}${result.stderr}`;
+  const { status } = result;
 
-  if (result.status === tlcExitCode.holds)
-    return { output, verdict: "holds" } as const;
+  if (status === tlcExitCode.holds)
+    return { output, status, verdict: "holds" } as const;
   if (
-    result.status === tlcExitCode.invariantBroken ||
-    result.status === tlcExitCode.propertyBroken
+    status === tlcExitCode.invariantBroken ||
+    status === tlcExitCode.propertyBroken
   ) {
-    return { output, verdict: "breaks" } as const;
+    return { output, status, verdict: "breaks" } as const;
   }
 
-  return { output, verdict: "error" } as const;
+  return { output, status, verdict: "error" } as const;
 }
 
 function getToolError(
   model: string,
   label: string,
-  output: string,
+  { output, status }: { output: string; status: null | number },
 ): CheckResult {
+  const cause =
+    status === tlcExitCode.deadlock ? "a deadlock" : `exit ${String(status)}`;
+
   return {
     isPassed: false,
-    line: `${model}: TLC could not run ${label}`,
+    line: `${model}: TLC stopped the ${label} run with ${cause}`,
     output,
   };
 }
@@ -109,40 +117,46 @@ function getRuleKeyword({ properties }: ModelClaims, rule: string) {
   return properties.includes(rule) ? "PROPERTY" : "INVARIANT";
 }
 
-function checkHolds(
-  runDirectory: string,
-  model: string,
-  modelClaims: ModelClaims,
-): CheckResult {
-  const { holds, properties } = modelClaims;
-  const rules = [...holds, ...properties];
-  const { output, verdict } = runTlc(runDirectory, {
-    cfg: [
-      "SPECIFICATION Spec",
-      `INVARIANT ${holds.join(" ")}`,
-      ...(properties.length > 0 ? [`PROPERTY ${properties.join(" ")}`] : []),
-    ],
-    flags: ["-coverage", "1"],
-    label: "holds",
-    model,
-    module: "spec",
-  });
+function getRuleLines(keyword: string, rules: string[]) {
+  return rules.length > 0 ? [`${keyword} ${rules.join(" ")}`] : [];
+}
 
-  if (verdict === "error") return getToolError(model, "holds", output);
-  if (verdict === "breaks") {
-    return {
-      isPassed: false,
-      line: `${model}: a rule that should hold breaks`,
-      output,
-    };
-  }
-
-  // TLC prints a block every `-coverage` interval, so an action reached late reads 0 in the earlier ones
+// TLC prints a block every `-coverage` interval, so an action reached late reads 0 in the earlier ones
+function readCoverage(output: string) {
   const finalCoverage = output.slice(output.lastIndexOf(coverageHeader));
   const deadActions: string[] = [];
+  let isInitCovered = false;
+
   for (const [, action, total] of finalCoverage.matchAll(coverageRowPattern)) {
+    if (action === "Init") isInitCovered = true;
     if (action === undefined || action === "Init" || total !== "0") continue;
     deadActions.push(action);
+  }
+
+  const deadExpressions = finalCoverage
+    .matchAll(deadExpressionPattern)
+    .map(
+      ([, line, column, module]) =>
+        `${String(module)}.tla:${String(line)}:${String(column)}`,
+    )
+    .toArray();
+
+  return { deadActions, deadExpressions, isInitCovered };
+}
+
+function getCoverageFailure(
+  model: string,
+  output: string,
+): CheckResult | undefined {
+  const { deadActions, deadExpressions, isInitCovered } = readCoverage(output);
+
+  // Unparsed coverage would otherwise read as every action enabled
+  if (!isInitCovered) {
+    return {
+      isPassed: false,
+      line: `${model}: no coverage rows read from TLC's output`,
+      output,
+    };
   }
 
   if (deadActions.length > 0) {
@@ -152,11 +166,55 @@ function checkHolds(
     };
   }
 
-  const states = finalCountPattern.exec(output)?.[1] ?? "?";
+  if (deadExpressions.length > 0) {
+    return {
+      isPassed: false,
+      line: `${model}: never evaluated: ${deadExpressions.join(", ")}`,
+    };
+  }
+
+  return;
+}
+
+function checkHolds(
+  runDirectory: string,
+  model: string,
+  modelClaims: ModelClaims,
+): CheckResult {
+  const { holds, properties } = modelClaims;
+  const rules = [...holds, ...properties];
+  const run = runTlc(runDirectory, {
+    cfg: [
+      "SPECIFICATION Spec",
+      ...getRuleLines("INVARIANT", holds),
+      ...getRuleLines("PROPERTY", properties),
+    ],
+    flags: ["-coverage", "1"],
+    label: "holds",
+    model,
+    module: "spec",
+  });
+
+  if (run.verdict === "error") return getToolError(model, "holds", run);
+  if (run.verdict === "breaks") {
+    return {
+      isPassed: false,
+      line: `${model}: a rule that should hold breaks`,
+      output: run.output,
+    };
+  }
+
+  const coverageFailure = getCoverageFailure(model, run.output);
+
+  if (coverageFailure) return coverageFailure;
+
+  const states = finalCountPattern.exec(run.output)?.[1] ?? "?";
+  const holding =
+    rules.length > 0 ? `${rules.join(", ")} hold` : "no rule holds yet";
 
   return {
     isPassed: true,
-    line: `${model}: ${rules.join(", ")} hold over ${states} states, every action enabled`,
+    line: `${model}: ${holding} over ${states} states, every action enabled`,
   };
 }
 
@@ -170,7 +228,7 @@ function checkMutant(
     rule,
   }: ModelClaims["mutants"][number] & { keyword: string },
 ): CheckResult {
-  const { output, verdict } = runTlc(runDirectory, {
+  const run = runTlc(runDirectory, {
     cfg: [
       "SPECIFICATION Spec",
       `${keyword} ${rule}`,
@@ -183,9 +241,9 @@ function checkMutant(
     module: "mutants",
   });
 
-  if (verdict === "error")
-    return getToolError(model, `mutant ${mutant}`, output);
-  if (verdict === "holds") {
+  if (run.verdict === "error")
+    return getToolError(model, `mutant ${mutant}`, run);
+  if (run.verdict === "holds") {
     return {
       isPassed: false,
       line: `${model}: mutant ${mutant} leaves ${rule} holding`,
@@ -198,18 +256,22 @@ function checkMutant(
 function checkFinding(
   runDirectory: string,
   model: string,
-  rule: string,
+  { isTemporal = false, rule }: ModelClaims["findings"][number],
 ): CheckResult {
-  const { output, verdict } = runTlc(runDirectory, {
-    cfg: ["SPECIFICATION Spec", `INVARIANT ${rule}`, "CHECK_DEADLOCK FALSE"],
+  const run = runTlc(runDirectory, {
+    cfg: [
+      "SPECIFICATION Spec",
+      `${isTemporal ? "PROPERTY" : "INVARIANT"} ${rule}`,
+      "CHECK_DEADLOCK FALSE",
+    ],
     label: `finding-${rule}`,
     model,
     module: "spec",
   });
 
-  if (verdict === "error")
-    return getToolError(model, `finding ${rule}`, output);
-  if (verdict === "holds") {
+  if (run.verdict === "error")
+    return getToolError(model, `finding ${rule}`, run);
+  if (run.verdict === "holds") {
     return {
       isPassed: false,
       line: `${model}: finding ${rule} now holds; move it to holds`,
@@ -220,7 +282,7 @@ function checkFinding(
 }
 
 function checkWitness(runDirectory: string, model: string): CheckResult {
-  const { output, verdict } = runTlc(runDirectory, {
+  const run = runTlc(runDirectory, {
     cfg: [
       "SPECIFICATION WitnessSpec",
       "INVARIANT PathNotReplayed",
@@ -231,8 +293,8 @@ function checkWitness(runDirectory: string, model: string): CheckResult {
     module: "witness",
   });
 
-  if (verdict === "error") return getToolError(model, "witness", output);
-  if (verdict === "holds") {
+  if (run.verdict === "error") return getToolError(model, "witness", run);
+  if (run.verdict === "holds") {
     return {
       isPassed: false,
       line: `${model}: the witness path is not reachable`,
@@ -248,8 +310,34 @@ function* checkModel(
   modelClaims: ModelClaims | undefined,
 ) {
   if (!modelClaims) {
-    yield { isPassed: false, line: `${model}: no entry in claims.ts` };
+    yield { isPassed: false, line: `${model}: no entry in claims` };
     return;
+  }
+
+  if (!existsSync(path.join(modelsDirectory, model, "spec.tla"))) {
+    yield {
+      isPassed: false,
+      line: `${model}: claims names a model with no spec.tla`,
+    };
+    return;
+  }
+
+  // TypeOK only bounds the variables, so a mutant of it would test TLC rather than the model
+  // A state predicate listed as a property is checked on Init alone, and only a mutant shows that
+  const unmutatedRules = [
+    ...modelClaims.holds,
+    ...modelClaims.properties,
+  ].filter(
+    (rule) =>
+      rule !== "TypeOK" &&
+      modelClaims.mutants.every((mutant) => mutant.rule !== rule),
+  );
+
+  if (unmutatedRules.length > 0) {
+    yield {
+      isPassed: false,
+      line: `${model}: no mutant shows these can break: ${unmutatedRules.join(", ")}`,
+    };
   }
 
   yield checkHolds(runDirectory, model, modelClaims);
@@ -271,8 +359,8 @@ function* checkModel(
     });
   }
 
-  for (const rule of modelClaims.findings) {
-    yield checkFinding(runDirectory, model, rule);
+  for (const finding of modelClaims.findings) {
+    yield checkFinding(runDirectory, model, finding);
   }
 
   if (existsSync(path.join(modelsDirectory, model, "witness.tla"))) {
@@ -302,9 +390,10 @@ function reportModel(
 }
 
 const claimsByModel = new Map<string, ModelClaims>(Object.entries(claims));
-const models = readdirSync(modelsDirectory, { withFileTypes: true })
+const modelDirectories = readdirSync(modelsDirectory, { withFileTypes: true })
   .filter((entry) => entry.isDirectory())
   .map((entry) => entry.name);
+const models = [...new Set([...modelDirectories, ...claimsByModel.keys()])];
 
 // Compose reuses any image carrying the tag, so a changed Dockerfile only lands through a build
 const build = spawnSync("docker", [...composeArguments, "build", "-q"], {

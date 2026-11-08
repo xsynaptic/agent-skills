@@ -21,7 +21,7 @@ verify/proofs/
 
 1. Copy [templates/lean/](templates/lean/) into `verify/proofs/` (or a scratch folder named `proofs`).
 2. `lean-toolchain`: `leanprover/lean4:v<latest stable>` from the Lean 4 GitHub releases. This file is the only place Lean's version lives; elan fetches it into the shared `lean-toolchains` volume, about 3 GB per version, once per machine.
-3. Bring the image pins current: the elan release in the URL, its installer's sha256, and each base image's digest (`docker buildx imagetools inspect <image> --format '{{json .Manifest.Digest}}'`). The tag names the elan version, so it changes with the pin.
+3. Bring the image pins current: the elan release in the URL, its installer's sha256, and each base image's digest. The tag names the elan version, so it changes with the pin.
 4. An empty `claims.lean`.
 5. Ignore `verify/proofs/.lake/` and `verify/proofs/lake-manifest.json`, which holds nothing while there are no dependencies.
 6. `"check-proofs": "docker compose -f verify/proofs/compose.yaml run --rm -q --build --quiet-build lean"`. `--build` matters: compose reuses any image carrying the tag, and every repo shares this tag.
