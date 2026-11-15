@@ -7,7 +7,7 @@ description: Self-hosted Umami analytics. Use when upgrading an Umami instance o
 
 Umami runs as a Docker container against PostgreSQL. Its failures are quiet: after a bad upgrade the container boots, the dashboard renders and the logs read clean while no events are recorded. Treat nothing as working until a query against the data shows it.
 
-Checked against Umami 3.4.0. Agent access needs 3.4.0 or later; everything else applies to any 3.x.
+Checked against Umami 3.5.0. Agent access needs 3.4.0 or later; everything else applies to any 3.x.
 
 Read the file for the task at hand:
 
@@ -38,7 +38,9 @@ Run this whenever the image tag changes.
 6. Run `ANALYZE session; ANALYZE website_event;` after any migration that touched a large table. Bulk DML leaves planner stats stale, and queries that were fast stay slow until autovacuum catches up.
 7. Confirm events are arriving: `SELECT count(*) FROM website_event WHERE created_at > '<boot time>';` climbs at the instance's usual rate, and the user sees realtime data in the dashboard.
 
-The upgrade is done when steps 5 and 7 both pass. A dashboard that loads is not evidence; in the v2 to v3 case below it loaded normally while every event was dropped.
+8. Confirm the edge serves the new tracker: `curl -sI https://<beacon-host>/script.js` should show a `last-modified` matching the new image's build. Umami sends `script.js` with `max-age=86400`, so a CDN in front keeps serving the old tracker for up to a day; purge that one URL.
+
+The upgrade is done when steps 5, 7 and 8 pass. A dashboard that loads is not evidence; in the v2 to v3 case below it loaded normally while every event was dropped.
 
 ## Upgrade footguns
 
