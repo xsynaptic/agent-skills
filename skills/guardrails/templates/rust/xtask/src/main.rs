@@ -24,7 +24,6 @@ const CHECK_STEPS: &[&[&str]] = &[
 ];
 
 const FIX_STEPS: &[&[&str]] = &[
-    &["fmt", "--all"],
     &[
         "clippy",
         "--fix",
@@ -34,6 +33,7 @@ const FIX_STEPS: &[&[&str]] = &[
         "--all-targets",
         "--locked",
     ],
+    &["fmt", "--all"],
 ];
 
 // Advisories turn red on news rather than on a change in the repo, so they stay out of the gate

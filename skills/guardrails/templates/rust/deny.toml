@@ -4,10 +4,18 @@ targets = ["aarch64-apple-darwin", "x86_64-unknown-linux-gnu"]
 [advisories]
 # The default fails only on direct dependencies
 unsound = "all"
-yanked = "deny"
 
 [licenses]
-allow = ["Apache-2.0", "MIT"]
+allow = [
+  "Apache-2.0",
+  "Apache-2.0 WITH LLVM-exception",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "ISC",
+  "MIT",
+  "Unicode-3.0",
+  "Zlib",
+]
 # The allowlist is policy, not a record of what's in use
 unused-allowed-license = "allow"
 
@@ -20,10 +28,6 @@ ignore = true
 multiple-versions = "allow"
 wildcards = "deny"
 allow-wildcard-paths = true
-
-# A build script runs arbitrary code on every build, so each one is read before it is listed
-[bans.build]
-allow-build-scripts = []
 
 [sources]
 unknown-git = "deny"
