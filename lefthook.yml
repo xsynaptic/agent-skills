@@ -3,8 +3,11 @@ pre-commit:
   jobs:
     # Git hooks run without node_modules/.bin on PATH
     # ESLint exits 1 for findings it could not fix, which wait for `pnpm check`; 2 is a crash
+    # Staged paths make ESLint load the nearest config, so a template's own config would lint it
     - name: lint
       glob: "*.ts"
+      exclude:
+        - "skills/guardrails/templates/**"
       run: node_modules/.bin/eslint --fix --cache --cache-location node_modules/.cache/eslint/ {staged_files} || [ $? -eq 1 ]
       stage_fixed: true
     - name: format

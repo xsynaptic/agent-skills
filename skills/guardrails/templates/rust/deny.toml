@@ -1,0 +1,30 @@
+[graph]
+targets = ["aarch64-apple-darwin", "x86_64-unknown-linux-gnu"]
+
+[advisories]
+# The default fails only on direct dependencies
+unsound = "all"
+yanked = "deny"
+
+[licenses]
+allow = ["Apache-2.0", "MIT"]
+# The allowlist is policy, not a record of what's in use
+unused-allowed-license = "allow"
+
+# Skips only crates marked `publish = false`, so every unpublished member sets it
+[licenses.private]
+ignore = true
+
+[bans]
+# A duplicate usually waits on an upstream release; failing on it trains reflex `skip` entries
+multiple-versions = "allow"
+wildcards = "deny"
+allow-wildcard-paths = true
+
+# A build script runs arbitrary code on every build, so each one is read before it is listed
+[bans.build]
+allow-build-scripts = []
+
+[sources]
+unknown-git = "deny"
+unknown-registry = "deny"

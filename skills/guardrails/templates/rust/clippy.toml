@@ -1,0 +1,9 @@
+# The restriction lints guard shipped code; a test may unwrap, index and panic
+allow-expect-in-tests = true
+allow-indexing-slicing-in-tests = true
+allow-panic-in-tests = true
+allow-unwrap-in-tests = true
+excessive-nesting-threshold = 4
+
+disallowed-methods = []
+disallowed-types = []

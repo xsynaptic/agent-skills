@@ -1,0 +1,41 @@
+# Agents grep past banners and summaries; a failed job still prints its whole output
+output:
+  - failure
+  - execution_out
+
+pre-commit:
+  jobs:
+    - name: format
+      glob: "*.rs"
+      run: cargo fmt --all --check
+
+pre-push:
+  jobs:
+    - name: gate
+      run: lefthook run check
+
+# Clippy and test share cargo's build lock, so parallel jobs would only queue
+check:
+  piped: true
+  jobs:
+    - name: format
+      run: cargo fmt --all --check
+    - name: unused
+      run: cargo shear --locked --deny-warnings
+    - name: supply-chain
+      run: cargo deny --locked check bans licenses sources -D warnings
+    - name: lint
+      run: cargo clippy --workspace --all-targets --locked -- -D warnings
+    - name: test
+      run: cargo test --workspace --locked
+
+fix:
+  piped: true
+  jobs:
+    - name: format
+      run: cargo fmt --all
+    # An agent's tree is always dirty
+    - name: lint
+      run: cargo clippy --fix --allow-dirty --allow-staged --workspace --all-targets --locked
+    - name: report
+      run: lefthook run check

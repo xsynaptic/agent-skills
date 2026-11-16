@@ -1,0 +1,5 @@
+# A new compiler brings new lints, so the pin moves in its own change
+[toolchain]
+channel = "1.100.0"
+components = ["clippy", "rustfmt"]
+profile = "minimal"
