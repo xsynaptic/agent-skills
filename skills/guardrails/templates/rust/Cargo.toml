@@ -1,4 +1,5 @@
 [workspace]
+members = ["xtask"]
 
 [workspace.lints.rust]
 let_underscore_drop = "warn"

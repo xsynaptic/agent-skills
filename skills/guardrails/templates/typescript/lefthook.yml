@@ -1,7 +1,6 @@
 # Agents grep past banners and summaries; a failed job still prints its whole output
 output:
   - failure
-  - execution_out
 
 # Check-only; a hook that re-stages files sweeps in a concurrent session's edits
 pre-commit:

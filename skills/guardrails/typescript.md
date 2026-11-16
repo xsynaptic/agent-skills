@@ -27,7 +27,7 @@ Licences and advisories are a **gap** in the gate; `pnpm audit` runs as an audit
 
 ## The gate
 
-ESLint runs with `--max-warnings 0`, which is what makes a warning fail.
+`check` and `fix` are named Lefthook commands. ESLint runs with `--max-warnings 0`, which is what makes a warning fail. `lefthook run` installs the git hooks on its first run; where git belongs to the operator, add `--no-auto-install` to both scripts.
 
 ## Layout
 

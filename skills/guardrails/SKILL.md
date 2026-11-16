@@ -20,7 +20,7 @@ When two tools cover one concern, turn the second one's rules off with a note na
 
 ## The gate
 
-- `check` only reports. `fix` autofixes, then reports whatever it couldn't fix. Both are named Lefthook commands, so the hook, the human, and the agent all run the same thing. Pre-push runs `check`.
+- `check` only reports. `fix` autofixes, then reports whatever it couldn't fix. Each is one named command in the language's runner, so the hook, the human, and the agent all run the same thing. Pre-push runs `check`.
 - A warning fails the gate just like an error does. `warn` only changes how the editor paints it.
 - Unit tests belong in the gate. Slow suites stay out of it, and `AGENTS.md` lists how to run them.
 - Output shows only on failure. Agents skim past banners, and a passing tool's report buries the one that failed.

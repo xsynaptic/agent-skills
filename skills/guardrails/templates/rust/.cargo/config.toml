@@ -1,0 +1,3 @@
+[alias]
+# Without --locked, cargo run rewrites Cargo.lock before the locked steps see it
+xtask = "run --locked --quiet --package xtask --"
