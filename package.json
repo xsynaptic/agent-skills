@@ -2,7 +2,7 @@
   "name": "agent-skills",
   "private": true,
   "type": "module",
-  "description": "Skills for Claude Code",
+  "description": "Claude Code skills for browser checks, diff critiques, formal verification, project guardrails, self-hosted Umami, and Wikipedia research",
   "license": "MIT",
   "scripts": {
     "check": "lefthook run check",
